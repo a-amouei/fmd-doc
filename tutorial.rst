@@ -187,4 +187,5 @@ The second parameter of an event-handler is of type :c:type:`fmd_event_t`. It de
    :align: center
 
 |
+
 This tutorial ends here. You can increase your knowledge of FMD further by studying the example C programs accompanying the source code of the library with the help of :doc:`reference`.
