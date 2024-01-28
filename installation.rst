@@ -49,6 +49,10 @@ Another way to get the source code of the library is by using the following comm
 
     git clone --depth 1 --branch v0.2.0 https://github.com/a-amouei/fmd.git
 
+.. note::
+
+    In case you face any problems with the above Git repository, you can use ``git://git.launchpad.net/fmd`` as an alternative.
+
 Compiling and installing FMD
 ----------------------------
 
