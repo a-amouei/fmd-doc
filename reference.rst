@@ -1060,7 +1060,7 @@ Once the user has nothing more to do with the output array, it should be freed b
     FMD can utilize OpenMP for parallel computation on systems with shared memory. This ability can be used instead of MPI-based parallel computation or in combination with it. By default, FMD requests one single thread any time it uses OpenMP for parallel computation. This means that, by default, OpenMP has no effect in practice. However, the requested number of OpenMP threads for the current process and the simulation instance specified by the parameter :c:var:`md` can be changed using this function. There is no other way to alter the requested number of threads. For example, calling the OpenMP function ``omp_set_num_threads()`` in a program linked to FMD has no effect on the number of threads that FMD requests.
 
     .. note::
-      If you set the requested number of threads to a value larger than 1, make sure that when running your program with *mpirun* it does not bind all threads to one single CPU core.
+      If you set the requested number of threads to a value larger than 1, make sure that when launching your program with *mpirun*, it does not bind all threads to one single CPU core.
 
 
 -----
