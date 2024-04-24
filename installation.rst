@@ -31,11 +31,11 @@ To compile and install FMD you also need Make, which can be installed in Ubuntu 
 Getting the source code of FMD
 ------------------------------
 
-To get the source code of the release 0.2.0 of FMD, you can go to https://github.com/a-amouei/fmd/releases in a web browser and download the ZIP file of the release and then uncompress it, or download it in a Linux terminal with a tool like GNU Wget:
+To get the source code of the release 0.3.0 of FMD, you can go to https://github.com/a-amouei/fmd/releases in a web browser and download the ZIP file of the release and then uncompress it, or download it in a Linux terminal with a tool like GNU Wget:
 
 .. code-block:: console
 
-    wget -O FMD.zip https://github.com/a-amouei/fmd/archive/refs/tags/v0.2.0.zip
+    wget -O FMD.zip https://github.com/a-amouei/fmd/archive/refs/tags/v0.3.0.zip
 
 The downloaded file can be uncompressed by entering the command
 
@@ -47,7 +47,7 @@ Another way to get the source code of the library is by using the following comm
 
 .. code-block:: console
 
-    git clone --depth 1 --branch v0.2.0 https://github.com/a-amouei/fmd.git
+    git clone --depth 1 --branch v0.3.0 https://github.com/a-amouei/fmd.git
 
 .. note::
 
