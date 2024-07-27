@@ -314,6 +314,7 @@ Types and values
     .. c:enumerator:: \
         FMD_TURI_CUSTOM
         FMD_TURI_TTM_TYPE1
+        FMD_TURI_TTM_TYPE2
 
     This type is used to specify the *category* of a turi. See :c:func:`fmd_turi_add` for more information.
 
