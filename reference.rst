@@ -295,7 +295,7 @@ Types and values
         fmd_real_t duration
         fmd_real_t AbsorptionDepth
 
-    This data type must be used to set the laser source term for a TTM turi of category :c:enumerator:`FMD_TURI_TTM_TYPE1`. In this case, the laser source term has the following spatio-temporal dependence:
+    This data type must be used to set the laser source term for a TTM turi of category :c:enumerator:`FMD_TURI_TTM_TYPE1` or :c:enumerator:`FMD_TURI_TTM_TYPE2`. In this cases, the laser source term has the following spatio-temporal dependence:
 
     .. math ::
 
@@ -1063,7 +1063,6 @@ Once the user has nothing more to do with the output array, it should be freed b
     .. note::
       If you set the requested number of threads to a value larger than 1, make sure that when launching your program with *mpirun*, it does not bind all threads to one single CPU core.
 
-
 -----
 
 **fmd_setEventHandler()**
@@ -1122,6 +1121,10 @@ Once the user has nothing more to do with the output array, it should be freed b
          - data type of :c:var:`g`
        * - :c:enumerator:`FMD_TURI_TTM_TYPE1`
          - :c:type:`fmd_real_t` or :c:type:`fmd_ttm_coupling_factor_constant_t`
+       * - :c:enumerator:`FMD_TURI_TTM_TYPE2`
+         - :c:type:`fmd_string_t`
+
+    When the turi is of the category :c:enumerator:`FMD_TURI_TTM_TYPE2`, the parameter :c:var:`g` must be the path to a file containing the tabulated data for the coupling factor. The library expects that this file is a text file with two columns, the first one representing the electron temperature in units of :math:`10^4` K, and the second one representing the coupling factor in units of :math:`10^{17}` W/(:math:`\mathrm{m}^3\mathrm{K}`). Here, W, m and K are watt, meter and kelvin, respectively. Based on *ab-initio* calculations, Leonid Zhigilei and his colleagues have produced such data files for some materials, which are available for download at https://compmat.org/electron-phonon-coupling/.
 
     See :c:func:`fmd_turi_add` for more information.
 
@@ -1139,7 +1142,7 @@ Once the user has nothing more to do with the output array, it should be freed b
 
 -----
 
-**md_ttm_setHeatCapacity()**
+**fmd_ttm_setHeatCapacity()**
 
 .. c:function:: void fmd_ttm_setHeatCapacity(fmd_t *md, fmd_handle_t turi, c)
 
@@ -1157,6 +1160,10 @@ Once the user has nothing more to do with the output array, it should be freed b
          - data type of :c:var:`c`
        * - :c:enumerator:`FMD_TURI_TTM_TYPE1`
          - :c:type:`fmd_ttm_heat_capacity_linear_t`
+       * - :c:enumerator:`FMD_TURI_TTM_TYPE2`
+         - :c:type:`fmd_string_t`
+
+    When the turi is of the category :c:enumerator:`FMD_TURI_TTM_TYPE2`, the parameter :c:var:`c` must be the path to a file containing the tabulated data for electron heat capacity. The library expects that this file is a text file with two columns, the first one representing the electron temperature in units of :math:`10^4` K, and the second one representing the electron heat capacity in units of :math:`10^5` J/(:math:`\mathrm{m}^3\mathrm{K}`). Here, J, m and K are joule, meter and kelvin, respectively. Based on *ab-initio* calculations, Leonid Zhigilei and his colleagues have produced such data files for some materials, which are available for download at https://compmat.org/electron-phonon-coupling/.
 
     See :c:func:`fmd_turi_add` for more information.
 
@@ -1201,7 +1208,7 @@ Once the user has nothing more to do with the output array, it should be freed b
 
        * - turi category
          - data type of :c:var:`laser`
-       * - :c:enumerator:`FMD_TURI_TTM_TYPE1`
+       * - :c:enumerator:`FMD_TURI_TTM_TYPE1` and :c:enumerator:`FMD_TURI_TTM_TYPE2`
          - :c:type:`fmd_ttm_laser_gaussian_t`
 
     See :c:func:`fmd_turi_add` for more information.
@@ -1233,19 +1240,40 @@ Once the user has nothing more to do with the output array, it should be freed b
     :param stoptime: the simulation time when the turi is deactivated
     :return: the handle to the turi
 
-    Adds a new turi to the simulation. Turies are introduced in `General notes`_. The parameter :c:var:`cat` specifies the category of the turi. If it is equal to :c:enumerator:`FMD_TURI_CUSTOM`, no field is added and the library user can add fields later with :c:func:`fmd_field_add`. If it is equal to :c:enumerator:`FMD_TURI_TTM_TYPE1`, the library adds to the turi the fields of categories :c:enumerator:`FMD_FIELD_NUMBER`, :c:enumerator:`FMD_FIELD_VCM`, :c:enumerator:`FMD_FIELD_TEMPERATURE`, :c:enumerator:`FMD_FIELD_TTM_TE` and :c:enumerator:`FMD_FIELD_TTM_XI`. See :c:type:`fmd_field_t` for information about these field categories. The handle to any added field, including the automatically added fields, can be found with :c:func:`fmd_field_find`. When a turi of :c:enumerator:`FMD_TURI_TTM_TYPE1` category exists in a simulation, :c:func:`fmd_dync_integrate` integrates the Newton's equations of motion coupled with the following generalized heat equation describing the evolution of electron temperature:
+    Adds a new turi to the simulation. Turies are introduced in `General notes`_. The parameter :c:var:`cat` specifies the category of the turi. If it is equal to :c:enumerator:`FMD_TURI_CUSTOM`, no field is added and the library user can add fields later with :c:func:`fmd_field_add`. If it is equal to :c:enumerator:`FMD_TURI_TTM_TYPE1` or :c:enumerator:`FMD_TURI_TTM_TYPE2`, the library adds to the turi the fields of categories :c:enumerator:`FMD_FIELD_NUMBER`, :c:enumerator:`FMD_FIELD_VCM`, :c:enumerator:`FMD_FIELD_TEMPERATURE`, :c:enumerator:`FMD_FIELD_TTM_TE` and :c:enumerator:`FMD_FIELD_TTM_XI`. See :c:type:`fmd_field_t` for information about these field categories. The handle to any added field, including the automatically added fields, can be found with :c:func:`fmd_field_find`. When a turi of :c:enumerator:`FMD_TURI_TTM_TYPE1` or :c:enumerator:`FMD_TURI_TTM_TYPE2` categories exists in a simulation, :c:func:`fmd_dync_integrate` integrates the Newton's equations of motion coupled with the following generalized heat equation describing the evolution of electron temperature:
 
     .. math::
 
         C_\mathrm{e}\frac{\partial T_\mathrm{e}}{\partial t}=\frac{\partial}{\partial z}\left(K_\mathrm{e}\frac{\partial T_\mathrm{e}}{\partial z}\right)-G\cdot(T_\mathrm{e}-T_\mathrm{l})+S(z,t),
 
-    where :math:`C_\mathrm{e}`, :math:`T_\mathrm{e}` and :math:`K_\mathrm{e}` are the heat capacity, temperature and heat conductivity of the electron subsystem at time :math:`t` and position :math:`z`, respectively. The electron-phonon coupling factor, :math:`G`, determines how fast thermal energy is transferred between the electron and phonon subsystems, and :math:`T_\mathrm{l}` is the lattice temperature. The laser source term :math:`S(z,t)` is the laser energy absorbed by the electron subsystem per time unit per volume unit at a depth of :math:`z` from the surface of the target. The heat equation above is solved numerically with finite difference (FD) method. The quantities :math:`C_\mathrm{e}`, :math:`K_\mathrm{e}`, :math:`G` and :math:`S(z,t)` must be set by :c:func:`fmd_ttm_setHeatCapacity`, :c:func:`fmd_ttm_setHeatConductivity`, :c:func:`fmd_ttm_setCouplingFactor` and :c:func:`fmd_ttm_setLaserSource`, respectively. The initial electron temperature is set by :c:func:`fmd_ttm_setElectronTemperature`. Usually, the time step for molecular dynamics (MD) time integration is many tens of times larger than the time step used for FD time integration. The ratio is an integer, set by the function :c:func:`fmd_ttm_setTimestepRatio`. When the number of atoms in a turi-cell becomes smaller than a certain fraction of the initial average number of atoms per non-empty turi-cell, that turi-cell is deactivated, which basically means the coupling between MD and FD is neglected for atoms inside it. The fraction by default is one-tenth (0.1) and can be changed by :c:func:`fmd_ttm_setCellActivationFraction`. More details about this so-called MD-TTM scheme can be found in [`D.S. Ivanov and L. V. Zhigilei, Phys. Rev. B 68, 064114 (2003) <https://doi.org/10.1103/PhysRevB.68.064114>`_].
+    where :math:`C_\mathrm{e}`, :math:`T_\mathrm{e}` and :math:`K_\mathrm{e}` are the heat capacity, temperature and heat conductivity of the electron subsystem at time :math:`t` and position :math:`z`, respectively. The electron-phonon coupling factor, :math:`G`, determines how fast thermal energy is transferred between the electron and phonon subsystems, and :math:`T_\mathrm{l}` is the lattice temperature. The laser source term :math:`S(z,t)` is the laser energy absorbed by the electron subsystem per time unit per volume unit at a depth of :math:`z` from the surface of the target. The heat equation above is solved numerically with finite difference (FD) method. The difference between the trui categories :c:enumerator:`FMD_TURI_TTM_TYPE1` and :c:enumerator:`FMD_TURI_TTM_TYPE2` is in the way the quantities :math:`C_\mathrm{e}`, :math:`K_\mathrm{e}`,  and :math:`G` are obtained/calculated. The following table compares the two turi categories briefly.
+
+    .. list-table:: 
+       :widths: 30 45 45
+       :header-rows: 1
+
+       * - turi category
+         - :c:enumerator:`FMD_TURI_TTM_TYPE1`
+         - :c:enumerator:`FMD_TURI_TTM_TYPE2`
+       * - :math:`C_\mathrm{e}`
+         - :math:`\gamma T_\mathrm{e}, \gamma=\mathrm{const.}`
+         - tabulated; function of :math:`T_\mathrm{e}`
+       * - :math:`K_\mathrm{e}`
+         - constant
+         - | :math:`\frac{1}{3} C_\mathrm{e} v_\mathrm{rms}^2 \tau`
+           | :math:`\tau = 1 / (A T_\mathrm{e}^2 + B T_\mathrm{l})`
+           | :math:`A,B,v_\mathrm{rms} = \mathrm{const.}`
+       * - :math:`G`
+         - constant
+         - tabulated; function of :math:`T_\mathrm{e}`
+
+The quantities :math:`C_\mathrm{e}`, :math:`K_\mathrm{e}`, :math:`G` and :math:`S(z,t)` must be set by :c:func:`fmd_ttm_setHeatCapacity`, :c:func:`fmd_ttm_setHeatConductivity`, :c:func:`fmd_ttm_setCouplingFactor` and :c:func:`fmd_ttm_setLaserSource`, respectively. The initial electron temperature is set by :c:func:`fmd_ttm_setElectronTemperature`. These five functions receive physical data in SI unit system, unless otherwise stated. Usually, the time step for molecular dynamics (MD) time integration is many tens of times larger than the time step used for FD time integration. The ratio is an integer, set by the function :c:func:`fmd_ttm_setTimestepRatio`. When the number of atoms in a turi-cell becomes smaller than a certain fraction of the initial average number of atoms per non-empty turi-cell, that turi-cell is deactivated, which basically means the coupling between MD and FD is neglected for atoms inside it. The fraction by default is one-tenth (0.1) and can be changed by :c:func:`fmd_ttm_setCellActivationFraction`. More details about this so-called MD-TTM scheme can be found in [`D.S. Ivanov and L. V. Zhigilei, Phys. Rev. B 68, 064114 (2003) <https://doi.org/10.1103/PhysRevB.68.064114>`_].
 
     .. warning::
 
         Do not add more than one TTM turi to a simulation.
 
-    Each of the parameters :c:var:`dimx`, :c:var:`dimy` and :c:var:`dimz` can be equal to or larger than 1. When the simulation time reaches :c:var:`starttime`, the turi is activated, i.e. the fields on it start to get updated. And when the simulation time passes :c:var:`stoptime`, the fields do not get updated any longer. If :c:var:`stoptime` is less than :c:var:`starttime`, the turi is never deactivated.`
+    Each of the parameters :c:var:`dimx`, :c:var:`dimy` and :c:var:`dimz` can be equal to or larger than 1. When the simulation time reaches :c:var:`starttime`, the turi is activated, i.e. the fields on it start to get updated. And when the simulation time passes :c:var:`stoptime`, the fields do not get updated any longer. If :c:var:`stoptime` is less than :c:var:`starttime`, the turi is never deactivated.
 
 -----
 
