@@ -10,17 +10,17 @@ Before compiling and installing FMD, a small number of libraries and tools must 
 * HDF5
 * GNU Scientific Library
 
-There are various ways to install these libraries. For example, in a Linux distribution, one can install them by using the package manager of the distribution or install them from source code. In Ubuntu [#]_, all the dependencies can be installed by entering one of the following two commands in a terminal emulator:
+There are various ways to install these libraries. For example, in a Linux distribution, one can install them by using the package manager of the distribution or can install them from source code. In Ubuntu [#]_, all the dependencies can be installed by entering one of the following two commands in a terminal emulator:
 
 .. code-block:: console
     :caption: Use this if you prefer MPICH
 
-    sudo apt install libgsl-dev libhdf5-mpich-dev
+    sudo apt install libmpich-dev libgsl-dev libhdf5-dev
 
 .. code-block:: console
     :caption: Use this if you prefer Open MPI
 
-    sudo apt install libgsl-dev libhdf5-openmpi-dev
+    sudo apt install libopenmpi-dev libgsl-dev libhdf5-dev
 
 To compile and install FMD you also need Make, which can be installed in Ubuntu with the following command:
 
@@ -31,11 +31,11 @@ To compile and install FMD you also need Make, which can be installed in Ubuntu 
 Getting the source code of FMD
 ------------------------------
 
-To get the source code of the release 0.3.0 of FMD, you can go to https://github.com/a-amouei/fmd/releases in a web browser and download the ZIP file of the release and then uncompress it, or download it in a Linux terminal with a tool like GNU Wget:
+To get the source code of the release 0.4.0 of FMD, you can go to https://github.com/a-amouei/fmd/releases in a web browser and download the ZIP file of the release and then uncompress it, or download it in a Linux terminal with a tool like GNU Wget:
 
 .. code-block:: console
 
-    wget -O FMD.zip https://github.com/a-amouei/fmd/archive/refs/tags/v0.3.0.zip
+    wget -O FMD.zip https://github.com/a-amouei/fmd/archive/refs/tags/v0.4.0.zip
 
 The downloaded file can be uncompressed by entering the command
 
@@ -47,11 +47,11 @@ Another way to get the source code of the library is by using the following comm
 
 .. code-block:: console
 
-    git clone --depth 1 --branch v0.3.0 https://github.com/a-amouei/fmd.git
+    git clone --depth 1 --branch v0.4.0 https://github.com/a-amouei/fmd.git
 
 .. note::
 
-    In case you face any problems with the above Git repository, you can use ``git://git.launchpad.net/fmd`` as an alternative.
+    In case you face any problems with the Git repository above, you can use ``git://git.launchpad.net/fmd`` as an alternative.
 
 Compiling and installing FMD
 ----------------------------
@@ -70,4 +70,12 @@ Similarly, FMD can be removed from the system by entering
 
     sudo make uninstall
 
-.. [#] All commands have been tested on Ubuntu 22.04. They should also work on all other not-too-old versions of Ubuntu.
+If you do not like to install FMD system-wide, and instead prefer to have a local copy of the library, you can use the following command:
+
+.. code-block:: console
+
+    make build
+
+This compiles the library, creates a directory named ``build`` in the root directory of the source code package, and copies the compiled library file and the header file ``fmd.h`` to it.
+
+.. [#] All commands have been tested on Ubuntu 22.04 and Ubuntu 24.04. They should also work on all other not-too-old versions of Ubuntu.
