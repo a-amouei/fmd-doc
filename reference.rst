@@ -282,6 +282,21 @@ Types and values
 
 -----
 
+**fmd_ttm_heat_conductivity_zhigilei_t**
+
+.. c:type:: struct _fmd_ttm_heat_conductivity_zhigilei fmd_ttm_heat_conductivity_zhigilei_t
+
+.. c:struct:: _fmd_ttm_heat_conductivity_zhigilei
+
+    .. c:var:: \
+        fmd_real_t v
+        fmd_real_t A
+        fmd_real_t B
+
+    This data type must be used to set the electron heat conductivity for a TTM turi of category :c:enumerator:`FMD_TURI_TTM_TYPE2`. In this case, the electron heat conductivity is calculated from the relation :math:`K_\mathrm{e} = \frac{1}{3} C_\mathrm{e} v_\mathrm{rms}^2 \tau_\mathrm{e}`, where :math:`\tau_\mathrm{e} = 1 / (A T_\mathrm{e}^2 + B T_\mathrm{l})` is the total electron scattering time . Here, the coefficients :math:`A` (represented by :c:var:`A`) and :math:`B` (represented by :c:var:`B`) are constants. Also, the constant :math:`v_\mathrm{rms}` (represented by :c:var:`v`) is the root mean square velocity of the electrons that contribute to the electron heat conductivity. The physical units of :math:`A`, :math:`B`, and :math:`v_\mathrm{rms}`  are :math:`\mathrm{s}^{-1}\mathrm{K}^{-2}`, :math:`\mathrm{s}^{-1}\mathrm{K}^{-1}`, and :math:`\mathrm{m}/\mathrm{s}`, respectively. This formulation is often seen in the works by Leonid Zhigilei, professor of materials science at the University of Virginia. See :c:func:`fmd_turi_add` and :c:func:`fmd_ttm_setHeatConductivity` for more information.
+
+-----
+
 **fmd_ttm_laser_gaussian_t**
 
 .. c:type:: struct _fmd_ttm_laser_gaussian fmd_ttm_laser_gaussian_t
@@ -1187,6 +1202,8 @@ Once the user has nothing more to do with the output array, it should be freed b
          - data type of :c:var:`k`
        * - :c:enumerator:`FMD_TURI_TTM_TYPE1`
          - :c:type:`fmd_real_t` or :c:type:`fmd_ttm_heat_conductivity_constant_t`
+       * - :c:enumerator:`FMD_TURI_TTM_TYPE2`
+         - :c:type:`fmd_ttm_heat_conductivity_zhigilei_t`
 
     See :c:func:`fmd_turi_add` for more information.
 
@@ -1260,14 +1277,14 @@ Once the user has nothing more to do with the output array, it should be freed b
          - tabulated; function of :math:`T_\mathrm{e}`
        * - :math:`K_\mathrm{e}`
          - constant
-         - | :math:`\frac{1}{3} C_\mathrm{e} v_\mathrm{rms}^2 \tau`
-           | :math:`\tau = 1 / (A T_\mathrm{e}^2 + B T_\mathrm{l})`
+         - | :math:`\frac{1}{3} C_\mathrm{e} v_\mathrm{rms}^2 \tau_\mathrm{e}`
+           | :math:`\tau_\mathrm{e} = 1 / (A T_\mathrm{e}^2 + B T_\mathrm{l})`
            | :math:`A,B,v_\mathrm{rms} = \mathrm{const.}`
        * - :math:`G`
          - constant
          - tabulated; function of :math:`T_\mathrm{e}`
 
-The quantities :math:`C_\mathrm{e}`, :math:`K_\mathrm{e}`, :math:`G` and :math:`S(z,t)` must be set by :c:func:`fmd_ttm_setHeatCapacity`, :c:func:`fmd_ttm_setHeatConductivity`, :c:func:`fmd_ttm_setCouplingFactor` and :c:func:`fmd_ttm_setLaserSource`, respectively. The initial electron temperature is set by :c:func:`fmd_ttm_setElectronTemperature`. These five functions receive physical data in SI unit system, unless otherwise stated. Usually, the time step for molecular dynamics (MD) time integration is many tens of times larger than the time step used for FD time integration. The ratio is an integer, set by the function :c:func:`fmd_ttm_setTimestepRatio`. When the number of atoms in a turi-cell becomes smaller than a certain fraction of the initial average number of atoms per non-empty turi-cell, that turi-cell is deactivated, which basically means the coupling between MD and FD is neglected for atoms inside it. The fraction by default is one-tenth (0.1) and can be changed by :c:func:`fmd_ttm_setCellActivationFraction`. More details about this so-called MD-TTM scheme can be found in [`D.S. Ivanov and L. V. Zhigilei, Phys. Rev. B 68, 064114 (2003) <https://doi.org/10.1103/PhysRevB.68.064114>`_].
+    The quantities :math:`C_\mathrm{e}`, :math:`K_\mathrm{e}`, :math:`G` and :math:`S(z,t)` must be set by :c:func:`fmd_ttm_setHeatCapacity`, :c:func:`fmd_ttm_setHeatConductivity`, :c:func:`fmd_ttm_setCouplingFactor` and :c:func:`fmd_ttm_setLaserSource`, respectively. The initial electron temperature is set by :c:func:`fmd_ttm_setElectronTemperature`. These five functions receive physical data in SI unit system, unless otherwise stated. Usually, the time step for molecular dynamics (MD) time integration is many tens of times larger than the time step used for FD time integration. The ratio is an integer, set by the function :c:func:`fmd_ttm_setTimestepRatio`. When the number of atoms in a turi-cell becomes smaller than a certain fraction of the initial average number of atoms per non-empty turi-cell, that turi-cell is deactivated, which basically means the coupling between MD and FD is neglected for atoms inside it. The fraction by default is one-tenth (0.1) and can be changed by :c:func:`fmd_ttm_setCellActivationFraction`. More details about this so-called MD-TTM scheme can be found in [`D.S. Ivanov and L. V. Zhigilei, Phys. Rev. B 68, 064114 (2003) <https://doi.org/10.1103/PhysRevB.68.064114>`_].
 
     .. warning::
 
