@@ -18,6 +18,8 @@ FMD utilizes `MPI <https://en.wikipedia.org/wiki/Message_Passing_Interface>`_ fo
 
 Many functions deal with special kinds of grids called *turies*, and fields defined on them. Temperature and density are examples of fields. Turies and fields can be used either to obtain physical quantities like temperature as functions of position or to combine molecular dynamics with finite difference solvers of partial differential equations representing continuum models. All cells of a turi are of the same size, which is determined by the dimensions of the turi and simulation box. A turi-cell may completely lie within a single subdomain or span two or more subdomains. A turi-cell can even be as large as the simulation box and span all of the subdomains (that is when the dimensions of the turi is :math:`1\times 1\times 1`). In a simulation, each turi together with its fields is treated as independent from other turies, but different fields of the same turi may be dependent on each other. For instance, temperature field is dependent on center-of-mass velocity field. The dependencies are managed automatically by the library. For example, when a temperature field is added to a turi by a call to :c:func:`fmd_field_add`, the library also adds a center-of-mass velocity field, if not already added.
 
+A program which uses this library can set an event-handler by calling :c:func:`fmd_setEventHandler`. Currently, the library is able to produce three types of events: timer ticks, field updates, and errors. Whenever an event occurs, the library calls the event-handler. By default, the library prints error messages to ``stderr`` in addition to producing error events. Users who do not want the library to print error messages can disable this by using :c:func:`fmd_io_setShowErrorMessages`.
+
 The version format is X.Y.Z.c, where X, Y, Z are non-negative integers and c is a character. This character is either 'r' or 'd', where 'r' stands for *release* and 'd' stands for *development*. Versions of the latter kind are for development and testing by the developers of the library, so here we limit our discussion to release versions. A program written for version X1.Y1.Z1 of the library must also work properly with version X2.Y2.Z2 if X1 = X2 and X1 ≠ 0 and Y1 ≯ Y2. In other cases, it may or may not work. The values of X, Y, Z, and c can be get by :c:func:`fmd_version_getMajor`, :c:func:`fmd_version_getMinor`, :c:func:`fmd_version_getRevision`, and :c:func:`fmd_version_getType`, respectively. The function :c:func:`fmd_version_getString` returns X.Y.Z as a string.
 
 Types and values
@@ -36,6 +38,43 @@ Types and values
 .. c:type:: struct _fmd_array3s fmd_array3s_t
 
     A variable of this data type is only used for freeing a three-dimensional array with :c:func:`fmd_array3s_free`.
+
+-----
+
+**fmd_error_t**
+
+.. c:type:: enum _fmd_error fmd_error_t
+
+.. c:enum:: _fmd_error
+
+    .. c:enumerator:: \
+        FMD_ERR_UNEXPECTED_POSITION
+        FMD_ERR_UNABLE_OPEN_FILE
+        FMD_ERR_UNABLE_ALLOCATE_MEM
+        FMD_ERR_FILE_CORRUPTED
+        FMD_ERR_OUTSIDE_REAL_INTERVAL
+        FMD_ERR_UNACCEPTABLE_INT_VALUE
+        FMD_ERR_UNSUCCESSFUL_HDF5
+        FMD_ERR_FUNCTION_FAILED
+        FMD_ERR_NOT_SUPPORTED_YET
+        FMD_ERR_UNPREPARED
+        FMD_ERR_WRONG_POTENTIAL
+
+    The values are described below briefly.
+
+    * :c:enumerator:`FMD_ERR_UNEXPECTED_POSITION`: the position of a particle is outside the allowed volume
+    * :c:enumerator:`FMD_ERR_UNABLE_OPEN_FILE`: the library is unable to open a file
+    * :c:enumerator:`FMD_ERR_UNABLE_ALLOCATE_MEM`: the system cannot allocate the requested amount of memory
+    * :c:enumerator:`FMD_ERR_FILE_CORRUPTED`: the file format is unsuitable or the file is corrupted
+    * :c:enumerator:`FMD_ERR_OUTSIDE_REAL_INTERVAL`: a real value is outside the acceptable range
+    * :c:enumerator:`FMD_ERR_UNACCEPTABLE_INT_VALUE`: an integer value is unacceptable
+    * :c:enumerator:`FMD_ERR_UNSUCCESSFUL_HDF5`: an HDF5 library operation was unsuccessful
+    * :c:enumerator:`FMD_ERR_FUNCTION_FAILED`: a particular function failed
+    * :c:enumerator:`FMD_ERR_NOT_SUPPORTED_YET`: the current version of the library does not support some feature
+    * :c:enumerator:`FMD_ERR_UNPREPARED`: something must be prepared before some operation can be performed
+    * :c:enumerator:`FMD_ERR_WRONG_POTENTIAL`: a specific potential is not designed for a given pair of atom-kinds
+
+    See also :c:type:`fmd_event_params_error_t`.
 
 -----
 
@@ -58,8 +97,101 @@ Types and values
        * - a turi-field is updated
          - :c:enumerator:`FMD_EVENT_FIELD_UPDATE`
          - :c:expr:`(fmd_event_params_field_update_t *)params`
+       * - an error occurs
+         - :c:enumerator:`FMD_EVENT_ERROR`
+         - :c:expr:`(fmd_event_params_error_t *)params`
 
     See also :c:func:`fmd_setEventHandler`.
+
+-----
+
+**fmd_event_params_error_t**
+
+.. c:type:: struct _fmd_event_params_error fmd_event_params_error_t
+
+.. c:struct:: _fmd_event_params_error
+
+    .. c:var:: \
+        fmd_error_t error
+        bool major
+        fmd_string_t source
+        fmd_string_t func
+        int line
+        fmd_pointer_t p1
+        fmd_pointer_t p2
+        fmd_pointer_t p3
+
+    When an event-handler is called due to a an error event, the :c:var:`params` parameter of the event-handler contains an :c:type:`fmd_event_params_error_t`. The member :c:var:`error` determines what kind of error has occurred. In the current version of the library, :c:var:`major` is undefined. The members :c:var:`source`, :c:var:`func` and :c:var:`line` specify the name of the source file, the function name, and the line number of the source file where the error is originated, respectively. The pointers :c:var:`p1`, :c:var:`p2`, and :c:var:`p3` point to additional information related to the event and their specific meaning is determined by the value of :c:var:`error` according to the following table.
+
+    .. list-table:: 
+       :widths: 22 30 30 30
+       :header-rows: 1
+
+       * - value of :c:var:`error`
+         - what :c:var:`p1` points to
+         - what :c:var:`p2` points to
+         - what :c:var:`p3` points to
+       * - :c:enumerator:`FMD_ERR_UNEXPECTED_POSITION`
+         - nothing
+         - nothing
+         - nothing
+       * - :c:enumerator:`FMD_ERR_UNABLE_OPEN_FILE`
+         - | file path;
+           | (:c:type:`fmd_string_t`)
+         - nothing
+         - nothing
+       * - :c:enumerator:`FMD_ERR_UNABLE_ALLOCATE_MEM`
+         - | requested memory (bytes);
+           | (:c:type:`size_t`)
+         - nothing
+         - nothing
+       * - :c:enumerator:`FMD_ERR_FILE_CORRUPTED`
+         - | expected file type;
+           | (:c:type:`fmd_string_t`)
+         - | file path;
+           | (:c:type:`fmd_string_t`)
+         - nothing
+       * - :c:enumerator:`FMD_ERR_OUTSIDE_REAL_INTERVAL`
+         - | quantity name;
+           | (:c:type:`fmd_string_t`)
+         - | quantity value;
+           | (:c:type:`fmd_real_t`)
+         - | interval label;
+           | (:c:type:`fmd_string_t`)
+       * - :c:enumerator:`FMD_ERR_UNACCEPTABLE_INT_VALUE`
+         - | quantity name;
+           | (:c:type:`fmd_string_t`)
+         - | quantity value;
+           | (:c:type:`int`)
+         - nothing
+       * - :c:enumerator:`FMD_ERR_UNSUCCESSFUL_HDF5`
+         - nothing
+         - nothing
+         - nothing
+       * - :c:enumerator:`FMD_ERR_FUNCTION_FAILED`
+         - | function name;
+           | (:c:type:`fmd_string_t`)
+         - nothing
+         - nothing
+       * - :c:enumerator:`FMD_ERR_NOT_SUPPORTED_YET`
+         - | message;
+           | (:c:type:`fmd_string_t`)
+         - nothing
+         - nothing
+       * - :c:enumerator:`FMD_ERR_UNPREPARED`
+         - | name;
+           | (:c:type:`fmd_string_t`)
+         - nothing
+         - nothing
+       * - :c:enumerator:`FMD_ERR_WRONG_POTENTIAL`
+         - | potential name;
+           | (:c:type:`fmd_string_t`)
+         - | atom-kind 1;
+           | (:c:type:`int`)
+         - | atom-kind 2;
+           | (:c:type:`int`)
+
+    See also :c:type:`fmd_EventHandler_t`.
 
 -----
 
@@ -99,6 +231,7 @@ Types and values
     .. c:enumerator:: \
         FMD_EVENT_TIMER_TICK
         FMD_EVENT_FIELD_UPDATE
+        FMD_EVENT_ERROR
 
     The type of one of the input parameters of an event-handler, which specifies the occurred event. See also :c:type:`fmd_EventHandler_t`.
 
@@ -159,6 +292,14 @@ Types and values
 .. c:type:: struct _fmd_params fmd_params_t
 
     One of the parameters of an event-handler is of this type. FMD uses that parameter to send any extra event-specific parameters to the event-handler. Its actual contents depend on what event has occurred. Since :c:type:`fmd_params_t` is an *incomplete* type, a typecast is required for accessing its contents. See also :c:type:`fmd_EventHandler_t`.
+
+-----
+
+**fmd_pointer_t**
+
+.. c:type:: void *fmd_pointer_t
+
+    The general purpose pointer type.
 
 -----
 
@@ -621,6 +762,17 @@ Once the user has nothing more to do with the output array, it should be freed b
     :param directory: the path of the directory
 
     Sets the path of the directory in which FMD saves all output files. The string :c:var:`directory` must either be empty or end with the path separator character of the operating system (e.g. slash ("/") in Unix-like operating systems). If the directory does not exist, it is NOT created by FMD.
+
+-----
+
+**fmd_io_setShowErrorMessages()**
+
+.. c:function:: void fmd_io_setShowErrorMessages(fmd_t *md, bool show)
+
+    :param md: an :c:type:`fmd_t`
+    :param show: specifies whether the library is allowed to print error messages directly
+
+    By default, when an error occurs, the library prints an error message to ``stderr`` in addition to producing an error event. Users can disable this by passing a ``false`` value for :c:var:`show`. This function does not have any effect on error events.
 
 -----
 
@@ -1257,7 +1409,7 @@ Once the user has nothing more to do with the output array, it should be freed b
     :param stoptime: the simulation time when the turi is deactivated
     :return: the handle to the turi
 
-    Adds a new turi to the simulation. Turies are introduced in `General notes`_. The parameter :c:var:`cat` specifies the category of the turi. If it is equal to :c:enumerator:`FMD_TURI_CUSTOM`, no field is added and the library user can add fields later with :c:func:`fmd_field_add`. If it is equal to :c:enumerator:`FMD_TURI_TTM_TYPE1` or :c:enumerator:`FMD_TURI_TTM_TYPE2`, the library adds to the turi the fields of categories :c:enumerator:`FMD_FIELD_NUMBER`, :c:enumerator:`FMD_FIELD_VCM`, :c:enumerator:`FMD_FIELD_TEMPERATURE`, :c:enumerator:`FMD_FIELD_TTM_TE` and :c:enumerator:`FMD_FIELD_TTM_XI`. See :c:type:`fmd_field_t` for information about these field categories. The handle to any added field, including the automatically added fields, can be found with :c:func:`fmd_field_find`. When a turi of :c:enumerator:`FMD_TURI_TTM_TYPE1` or :c:enumerator:`FMD_TURI_TTM_TYPE2` categories exists in a simulation, :c:func:`fmd_dync_integrate` integrates the Newton's equations of motion coupled with the following generalized heat equation describing the evolution of electron temperature:
+    Adds a new turi to the simulation. Turies are introduced in `General notes`_. The parameter :c:var:`cat` specifies the category of the turi. If it is equal to :c:enumerator:`FMD_TURI_CUSTOM`, no field is added and the library user can add fields later with :c:func:`fmd_field_add`. If it is equal to :c:enumerator:`FMD_TURI_TTM_TYPE1` or :c:enumerator:`FMD_TURI_TTM_TYPE2`, the library adds to the turi the fields of categories :c:enumerator:`FMD_FIELD_NUMBER`, :c:enumerator:`FMD_FIELD_VCM`, :c:enumerator:`FMD_FIELD_TEMPERATURE`, :c:enumerator:`FMD_FIELD_TTM_TE` and :c:enumerator:`FMD_FIELD_TTM_XI`. See :c:type:`fmd_field_t` for information about these field categories. All fields of a TTM turi are updated every time step. However, the time interval between the updates of a field added to a turi of :c:enumerator:`FMD_TURI_CUSTOM` category is determined by the user when calling :c:func:`fmd_field_add`. Every time a field is updated, an event is produced. The handle to any added field, including the automatically added fields, can be found with :c:func:`fmd_field_find`. When a turi of :c:enumerator:`FMD_TURI_TTM_TYPE1` or :c:enumerator:`FMD_TURI_TTM_TYPE2` categories exists in a simulation, :c:func:`fmd_dync_integrate` integrates the Newton's equations of motion coupled with the following generalized heat equation describing the evolution of the electron temperature:
 
     .. math::
 
