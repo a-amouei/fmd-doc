@@ -1187,6 +1187,17 @@ Once the user has nothing more to do with the output array, it should be freed b
 
 -----
 
+**fmd_proc_getCellIncrement()**
+
+.. c:function:: int fmd_proc_getCellIncrement(fmd_t *md)
+
+    :param md: an :c:type:`fmd_t`
+    :returns: the current value of cell capacity increment/decrement
+
+    See :c:func:`fmd_proc_setCellIncrement` for more information.
+
+-----
+
 **fmd_proc_getWallTime()**
 
 .. c:function:: fmd_real_t fmd_proc_getWallTime(fmd_t *md)
@@ -1215,6 +1226,17 @@ Once the user has nothing more to do with the output array, it should be freed b
     :returns: ``true``, if called on the root process; ``false``, otherwise.
 
     This function is used to recognize if the current MPI process is the root process. Exactly one process is chosen to be the root by FMD.
+
+-----
+
+**fmd_proc_setCellIncrement()**
+
+.. c:function:: void fmd_proc_setCellIncrement(fmd_t *md , int incr)
+
+    :param md: an :c:type:`fmd_t`
+    :param incr: the desired value of cell capacity increment/decrement
+
+    FMD employs cell lists to efficiently find pairs of interacting atoms at each time step. Each cell contains arrays that hold atomic data such as positions and velocities. The sizes of these arrays change as atoms enter or leave a cell. The library can increase or decrease the cell capacity, i.e., the number of atoms it can contain, by values equal to or larger than 1. With larger values, simulations occupy more memory, but the number of memory allocation operations is reduced. The optimal value depends on various factors, including the parameters and geometry of the problem. The default value is 3, which can be changed by this function. The current value can be retrieved using :c:func:`fmd_proc_getCellIncrement`.
 
 -----
 
